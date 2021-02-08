@@ -459,14 +459,33 @@ const DOWN_ARROW = 40;
 
 /** The thumb gap size for a disabled slider. */
 
-const DISABLED_THUMB_GAP = 7;
+const DISABLED_THUMB_GAP = {
+  name: '--disabled-thumb-gap',
+  fallback: '7px'
+};
 /** The thumb gap size for a non-active slider at its minimum value. */
 
-const MIN_VALUE_NONACTIVE_THUMB_GAP = 7;
+const MIN_VALUE_NONACTIVE_THUMB_GAP = {
+  name: '--min-value-nonactive-thumb-gap',
+  fallback: '7px'
+};
 /** The thumb gap size for an active slider at its minimum value. */
 
-const MIN_VALUE_ACTIVE_THUMB_GAP = 10;
+const MIN_VALUE_ACTIVE_THUMB_GAP = {
+  name: '--min-value-active-thumb-gap',
+  fallback: '10px'
+};
+/** Emits a CSS expression referencing one of the above variables or a numeric literal. */
+
+function referenceCssVariable(negative, variable) {
+  if (typeof variable === 'number') {
+    return negative ? `-${variable}px` : `${variable}px`;
+  } else {
+    return negative ? `calc(0px - var(${variable.name}, ${variable.fallback}))` : `var(${variable.name}, ${variable.fallback})`;
+  }
+}
 /** Returns the window element for the givent el. */
+
 
 function getWindowForElement(element) {
   var doc = element.ownerDocument || element;
@@ -633,20 +652,20 @@ function getWindowForElement(element) {
     trackBackgroundStyles(percent) {
       const axis = this.vertical ? "Y" : "X";
       const scale = this.vertical ? `1, ${1 - percent}, 1` : `${1 - percent}, 1, 1`;
-      const sign = this.shouldInvertMouseCoords() ? "-" : "";
+      const neg = this.shouldInvertMouseCoords();
       return {
         // scale3d avoids some rendering issues in Chrome. See #12071.
-        transform: `translate${axis}(${sign}${this.thumbGap}px) scale3d(${scale})`
+        transform: `translate${axis}(${referenceCssVariable(neg, this.thumbGap)}) scale3d(${scale})`
       };
     },
 
     trackFillStyles(percent) {
       const axis = this.vertical ? "Y" : "X";
       const scale = this.vertical ? `1, ${percent}, 1` : `${percent}, 1, 1`;
-      const sign = this.shouldInvertMouseCoords() ? "" : "-";
+      const neg = !this.shouldInvertMouseCoords();
       return {
         // scale3d avoids some rendering issues in Chrome. See #12071.
-        transform: `translate${axis}(${sign}${this.thumbGap}px) scale3d(${scale})`
+        transform: `translate${axis}(${referenceCssVariable(neg, this.thumbGap)}) scale3d(${scale})`
       };
     },
 
